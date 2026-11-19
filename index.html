@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OBSIDION ($OBS) | Resmi Ön Satış & Ödül Portalı</title>
+  <meta name="description" content="OBSIDION ($OBS) — Robinhood Chain üzerindeki deflasyonist, otomatik temettü dağıtan ve erken yatırımcıyı ödüllendiren topluluk tokenı." />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #07090d;
+      --card: #10151f;
+      --card-border: #1e2838;
+      --accent: #00e676;
+      --accent-glow: rgba(0, 230, 118, 0.22);
+      --gold: #f5c451;
+      --text: #edf2f7;
+      --muted: #8b9bb4;
+      --danger: #ff5c72;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(0, 230, 118, 0.08), transparent 38%),
+        radial-gradient(circle at 85% 20%, rgba(245, 196, 81, 0.07), transparent 40%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 20px 16px 64px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: rgba(16, 21, 31, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: 0.04em;
+    }
+
+    .logo-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00e676, #0d9488);
+      color: #05110b;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 1.05rem;
+      box-shadow: 0 0 18px var(--accent-glow);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .net-pill {
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0, 230, 118, 0.12);
+      border: 1px solid rgba(0, 230, 118, 0.35);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00e676, #00c853);
+      color: #04130b;
+      box-shadow: 0 6px 22px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: #182132;
+      color: var(--text);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #f5c451, #e09f1f);
+      color: #1a1203;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 44px 8px 28px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      background: rgba(245, 196, 81, 0.1);
+      border: 1px solid rgba(245, 196, 81, 0.3);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: clamp(1.9rem, 5vw, 3.1rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      max-width: 650px;
+      margin: 0 auto 22px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .contract-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      word-break: break-all;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 22px;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-desc {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+    }
+
+    .progress-wrap {
+      background: #090d14;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.86rem;
+      margin-bottom: 8px;
+    }
+
+    .bar-bg {
+      height: 12px;
+      background: #1a2232;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00e676, #f5c451);
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    .quick-amounts {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .chip {
+      background: #161f2f;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 8px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .input-group input {
+      width: 100%;
+      background: #090d14;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 66px 14px 14px;
+      color: var(--text);
+      font-size: 1.05rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .input-group input:focus { border-color: var(--accent); }
+
+    .input-unit {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .calc-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 230, 118, 0.06);
+      border: 1px dashed rgba(0, 230, 118, 0.35);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      font-size: 0.9rem;
+    }
+
+    .calc-val { font-weight: 800; color: var(--accent); font-size: 1rem; }
+
+    .status {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      display: none;
+      word-break: break-word;
+    }
+
+    .status.ok {
+      display: block;
+      background: rgba(0, 230, 118, 0.12);
+      border: 1px solid rgba(0, 230, 118, 0.4);
+      color: #a7f3d0;
+    }
+
+    .status.err {
+      display: block;
+      background: rgba(255, 92, 114, 0.12);
+      border: 1px solid rgba(255, 92, 114, 0.4);
+      color: #fecdd3;
+    }
+
+    .status.info {
+      display: block;
+      background: rgba(245, 196, 81, 0.12);
+      border: 1px solid rgba(245, 196, 81, 0.4);
+      color: #fde68a;
+    }
+
+    .stat-list {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: #090d14;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      font-size: 0.88rem;
+    }
+
+    .stat-row span:first-child { color: var(--muted); }
+    .stat-row strong { color: var(--text); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .metric-card .label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+    }
+
+    .metric-card .val {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .metric-card .sub {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .step-box {
+      background: #090d14;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .step-num {
+      display: inline-block;
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .step-box h3 { font-size: 0.98rem; margin-bottom: 6px; }
+    .step-box p { font-size: 0.84rem; color: var(--muted); }
+
+    footer {
+      margin-top: 34px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding-top: 18px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    @media (max-width: 560px) {
+      header { flex-direction: column; align-items: stretch; }
+      .header-actions { justify-content: space-between; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo-badge">O</div>
+        <div>OBSIDION <span style="color:var(--accent)">$OBS</span></div>
+      </div>
+      <div class="header-actions">
+        <span class="net-pill" id="networkBadge">Robinhood Chain (4663)</span>
+        <button class="btn btn-primary" id="connectBtn">Cüzdan Bağla</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="tag">Doğrulanmış Kontrat • Sabit 1 Milyar Arz • Otomatik Yakım & Temettü</div>
+      <h1>Geleceğin Deflasyonist Gücü: <span>OBSIDION</span></h1>
+      <p class="subtitle">
+        Robinhood Chain üzerinde inşa edilen $OBS, her alım-satım işleminde arzını otomatik olarak yakar,
+        sahiplerine zincir üstü temettü havuzu biriktirir ve ilk 100 sadık alıcıyı özel airdrop ile ödüllendirir.
+      </p>
+      <div class="contract-bar">
+        <span style="color:var(--muted)">Kontrat:</span>
+        <span class="mono" id="contractText">0x804978838F8791B566F16368E129dDd61D3299ec</span>
+        <button class="chip" id="copyContractBtn">Kopyala</button>
+        <a id="explorerLink" target="_blank" rel="noopener">Blockscout ↗</a>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <!-- ÖN SATIŞ KARTI -->
+      <div class="card">
+        <h2>
+          <span>$OBS Ön Satış</span>
+          <span style="font-size:0.78rem;color:var(--accent)">CANLI</span>
+        </h2>
+        <p class="card-desc">
+          Ön satışta toplanan ETH fonu, Uniswap v2 <strong>OBS / ETH</strong> likidite havuzunu başlatmak için kullanılır.
+          Katılımcıların $OBS tokenları lansman anında %0 vergiyle doğrudan gönderici cüzdanlarına dağıtılır.
+        </p>
+
+        <div class="progress-wrap">
+          <div class="progress-top">
+            <span>Toplanan: <strong id="raisedText">Yükleniyor...</strong></span>
+            <span>Hedef: <strong id="hardCapText">2.00 ETH</strong></span>
+          </div>
+          <div class="bar-bg">
+            <div class="bar-fill" id="progressBar"></div>
+          </div>
+          <div class="progress-top" style="margin-top:8px;margin-bottom:0;color:var(--muted);font-size:0.78rem">
+            <span>1 ETH = 50.000.000 OBS</span>
+            <span id="percentText">%0</span>
+          </div>
+        </div>
+
+        <div class="quick-amounts">
+          <button class="chip" data-eth="0.005">0.005 ETH</button>
+          <button class="chip" data-eth="0.02">0.02 ETH</button>
+          <button class="chip" data-eth="0.05">0.05 ETH</button>
+          <button class="chip" data-eth="0.1">0.10 ETH</button>
+        </div>
+
+        <div class="input-group">
+          <input type="number" id="ethInput" min="0.005" max="0.25" step="0.001" placeholder="0.05" value="0.05" />
+          <span class="input-unit">ETH</span>
+        </div>
+
+        <div class="calc-box">
+          <span>Hak Kazanacağın Miktar:</span>
+          <span class="calc-val" id="obsOutput">2.500.000 OBS</span>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%" id="buyBtn">Ön Satışa Katıl (ETH Gönder)</button>
+        <div class="status" id="presaleStatus"></div>
+      </div>
+
+      <!-- CÜZDAN & TEMETTÜ PANELİ -->
+      <div class="card">
+        <h2>
+          <span>Cüzdan & Temettü Paneli</span>
+          <span style="font-size:0.78rem;color:var(--gold)">%35 HAVUZ</span>
+        </h2>
+        <p class="card-desc">
+          Cüzdanını bağlayarak $OBS bakiyeni görüntüleyebilir, DEX hacminden biriken holder temettü ödüllerini
+          doğrudan akıllı kontrattan çekebilirsin.
+        </p>
+
+        <div class="stat-list">
+          <div class="stat-row">
+            <span>Bağlı Cüzdan</span>
+            <strong class="mono" id="walletAddr">Bağlı değil</strong>
+          </div>
+          <div class="stat-row">
+            <span>Ağ ETH Bakiyen</span>
+            <strong id="ethBalance">-</strong>
+          </div>
+          <div class="stat-row">
+            <span>$OBS Bakiyen</span>
+            <strong id="obsBalance" style="color:var(--accent)">-</strong>
+          </div>
+          <div class="stat-row">
+            <span>Kişi Başı Ön Satış Limiti</span>
+            <strong>0.005 – 0.25 ETH</strong>
+          </div>
+          <div class="stat-row">
+            <span>Ön Satış Havuz Adresi</span>
+            <strong class="mono" style="font-size:0.78rem">0x2881...DcE7</strong>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <button class="btn btn-gold" id="claimBtn">Temettü Çek</button>
+          <button class="btn btn-secondary" id="addTokenBtn">Cüzdana $OBS Ekle</button>
+        </div>
+
+        <div class="status" id="walletStatus"></div>
+      </div>
+    </div>
+
+    <!-- TOKENOMİ ÖZETİ -->
+    <div class="metrics">
+      <div class="metric-card">
+        <div class="label">Sabit Toplam Arz</div>
+        <div class="val">1.000.000.000</div>
+        <div class="sub">Yeni mint kapalıdır; arz sürekli yakılarak azalır.</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Alım / Satım / Transfer Vergisi</div>
+        <div class="val">%3 / %7 / %0</div>
+        <div class="sub">Cüzdanlar arası transferler tamamen ücretsizdir.</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Vergi Dağılımı</div>
+        <div class="val">%45 / %35 / %20</div>
+        <div class="sub">%45 Geliştirme • %35 Holder Ödülü • %20 Yakım</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">İlk 100 Sadık Alıcı</div>
+        <div class="val">Diamond Hands</div>
+        <div class="sub">Satış yapmadan tutan ilk 100 benzersiz cüzdan özel airdrop alır.</div>
+      </div>
+    </div>
+
+    <!-- YOL HARİTASI -->
+    <div class="card" style="margin-top:18px">
+      <h2>Lansman Süreci Nasıl İşler?</h2>
+      <div class="steps">
+        <div class="step-box">
+          <span class="step-num">ADIM 01</span>
+          <h3>Ön Satış Katılımı</h3>
+          <p>Robinhood Chain (4663) ağına bağlanarak 0.005 – 0.25 ETH aralığında katılım sağlarsın. Tüm işlemler Blockscout üzerinde şeffaf biçimde kayıt altına alınır.</p>
+        </div>
+        <div class="step-box">
+          <span class="step-num">ADIM 02</span>
+          <h3>Likidite Havuzu & Dağıtım</h3>
+          <p>Ön satış hedefe ulaştığında toplanan ETH + %75 OBS arzıyla Uniswap v2 havuzu açılır ve ön satış katılımcılarının $OBS tokenları %0 vergiyle gönderilir.</p>
+        </div>
+        <div class="step-box">
+          <span class="step-num">ADIM 03</span>
+          <h3>Yakım, Temettü & Airdrop</h3>
+          <p>DEX işlemleri başladığı anda %20 yakım, %35 temettü havuzu ve İlk 100 sadık alıcı takip mekanizması otomatik olarak çalışmaya başlar.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      OBSIDION ($OBS) • Robinhood Chain Mainnet (Chain ID: 4663) • Doğrulanmış Akıllı Sözleşme:
+      <a href="https://robinhoodchain.blockscout.com/address/0x804978838F8791B566F16368E129dDd61D3299ec" target="_blank" rel="noopener">
+        0x804978838F8791B566F16368E129dDd61D3299ec
+      </a>
+    </footer>
+  </div>
+
+  <script>
+    const CONFIG = {
+      CHAIN_ID: 4663,
+      CHAIN_ID_HEX: "0x1237",
+      CHAIN_NAME: "Robinhood Chain",
+      RPC_URL: "https://rpc.mainnet.chain.robinhood.com",
+      EXPLORER: "https://robinhoodchain.blockscout.com",
+      TOKEN_ADDRESS: "0x804978838F8791B566F16368E129dDd61D3299ec",
+      PRESALE_WALLET: "0x28817689e462a6fa1144fa99bb26DFaF60fEDcE7",
+      TOKEN_SYMBOL: "OBS",
+      TOKEN_DECIMALS: 18,
+      RATE_PER_ETH: 50000000,
+      HARD_CAP_ETH: 2.0,
+      MIN_ETH: 0.005,
+      MAX_ETH: 0.25
+    };
+
+    const TOKEN_ABI = [
+      "function balanceOf(address account) view returns (uint256)",
+      "function decimals() view returns (uint8)",
+      "function claimRewards() external"
+    ];
+
+    let provider = null;
+    let signer = null;
+    let userAddress = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    $("explorerLink").href = `${CONFIG.EXPLORER}/address/${CONFIG.TOKEN_ADDRESS}`;
+
+    function showStatus(elId, type, html) {
+      const el = $(elId);
+      el.className = `status ${type}`;
+      el.innerHTML = html;
+    }
+
+    function shortAddr(addr) {
+      return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+    }
+
+    function updateCalc() {
+      const val = parseFloat($("ethInput").value) || 0;
+      const obs = Math.floor(val * CONFIG.RATE_PER_ETH);
+      $("obsOutput").textContent = `${obs.toLocaleString("tr-TR")} OBS`;
+    }
+
+    document.querySelectorAll(".quick-amounts .chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        $("ethInput").value = btn.dataset.eth;
+        updateCalc();
+      });
+    });
+
+    $("ethInput").addEventListener("input", updateCalc);
+
+    $("copyContractBtn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(CONFIG.TOKEN_ADDRESS);
+        $("copyContractBtn").textContent = "Kopyalandı ✓";
+        setTimeout(() => ($("copyContractBtn").textContent = "Kopyala"), 1800);
+      } catch {
+        showStatus("walletStatus", "info", `Kontrat adresi: ${CONFIG.TOKEN_ADDRESS}`);
+      }
+    });
+
+    async function loadPresaleProgress() {
+      try {
+        const readProvider = new ethers.JsonRpcProvider(CONFIG.RPC_URL);
+        const rawBal = await readProvider.getBalance(CONFIG.PRESALE_WALLET);
+        const ethVal = parseFloat(ethers.formatEther(rawBal));
+        const pct = Math.min((ethVal / CONFIG.HARD_CAP_ETH) * 100, 100);
+        $("raisedText").textContent = `${ethVal.toFixed(4)} ETH`;
+        $("progressBar").style.width = `${pct.toFixed(1)}%`;
+        $("percentText").textContent = `%${pct.toFixed(1)}`;
+      } catch (err) {
+        $("raisedText").textContent = "0.0000 ETH";
+      }
+    }
+
+    async function ensureRobinhoodNetwork() {
+      if (!window.ethereum) return false;
+      const currentChainHex = await window.ethereum.request({ method: "eth_chainId" });
+      if (parseInt(currentChainHex, 16) === CONFIG.CHAIN_ID) return true;
+
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: CONFIG.CHAIN_ID_HEX }]
+        });
+        return true;
+      } catch (switchErr) {
+        if (switchErr.code === 4902 || switchErr.code === -32603) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: CONFIG.CHAIN_ID_HEX,
+              chainName: CONFIG.CHAIN_NAME,
+              nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+              rpcUrls: [CONFIG.RPC_URL],
+              blockExplorerUrls: [CONFIG.EXPLORER]
+            }]
+          });
+          return true;
+        }
+        throw switchErr;
+      }
+    }
+
+    async function refreshUserBalances() {
+      if (!provider || !userAddress) return;
+      try {
+        const ethBal = await provider.getBalance(userAddress);
+        $("ethBalance").textContent = `${parseFloat(ethers.formatEther(ethBal)).toFixed(5)} ETH`;
+
+        const tokenContract = new ethers.Contract(CONFIG.TOKEN_ADDRESS, TOKEN_ABI, provider);
+        const obsBal = await tokenContract.balanceOf(userAddress);
+        const formattedObs = parseFloat(ethers.formatUnits(obsBal, CONFIG.TOKEN_DECIMALS));
+        $("obsBalance").textContent = `${formattedObs.toLocaleString("tr-TR", { maximumFractionDigits: 2 })} OBS`;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        const dappUrl = window.location.href.replace(/^https?:\/\//, "");
+        showStatus(
+          "presaleStatus",
+          "info",
+          `Web3 cüzdan algılanmadı. Telefondan bağlanıyorsan bu sayfayı MetaMask içi tarayıcıdan aç: ` +
+          `<a href="https://metamask.app.link/dapp/${dappUrl}" target="_blank" rel="noopener"><strong>MetaMask'ta Aç ↗</strong></a>`
+        );
+        return false;
+      }
+
+      try {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        await ensureRobinhoodNetwork();
+        provider = new ethers.BrowserProvider(window.ethereum);
+        signer = await provider.getSigner();
+        userAddress = await signer.getAddress();
+
+        $("connectBtn").textContent = shortAddr(userAddress);
+        $("walletAddr").textContent = shortAddr(userAddress);
+        $("networkBadge").textContent = "Bağlı: Robinhood Chain";
+
+        await refreshUserBalances();
+        showStatus("walletStatus", "ok", "Cüzdan Robinhood Chain (4663) ağına bağlandı.");
+        return true;
+      } catch (err) {
+        showStatus("walletStatus", "err", `Bağlantı iptal edildi veya ağ değiştirilemedi: ${err.shortMessage || err.message}`);
+        return false;
+      }
+    }
+
+    $("connectBtn").addEventListener("click", connectWallet);
+
+    $("buyBtn").addEventListener("click", async () => {
+      if (!signer) {
+        const ok = await connectWallet();
+        if (!ok) return;
+      }
+
+      const amount = parseFloat($("ethInput").value);
+      if (isNaN(amount) || amount < CONFIG.MIN_ETH || amount > CONFIG.MAX_ETH) {
+        showStatus("presaleStatus", "err", `Lütfen ${CONFIG.MIN_ETH} ETH ile ${CONFIG.MAX_ETH} ETH arasında bir tutar girin.`);
+        return;
+      }
+
+      try {
+        await ensureRobinhoodNetwork();
+        $("buyBtn").disabled = true;
+        showStatus("presaleStatus", "info", "Cüzdan onayı bekleniyor...");
+
+        const tx = await signer.sendTransaction({
+          to: CONFIG.PRESALE_WALLET,
+          value: ethers.parseEther(amount.toString())
+        });
+
+        showStatus(
+          "presaleStatus",
+          "info",
+          `İşlem ağa gönderildi, onay bekleniyor... <a href="${CONFIG.EXPLORER}/tx/${tx.hash}" target="_blank" rel="noopener">İşlemi Gör ↗</a>`
+        );
+
+        await tx.wait();
+        const earnedObs = Math.floor(amount * CONFIG.RATE_PER_ETH).toLocaleString("tr-TR");
+        showStatus(
+          "presaleStatus",
+          "ok",
+          `Katılım tamamlandı! <strong>${earnedObs} OBS</strong> hakkın blokzincire kaydedildi. ` +
+          `<a href="${CONFIG.EXPLORER}/tx/${tx.hash}" target="_blank" rel="noopener">Makbuzu Gör ↗</a>`
+        );
+
+        await Promise.all([loadPresaleProgress(), refreshUserBalances()]);
+      } catch (err) {
+        const msg = err.code === "ACTION_REJECTED"
+          ? "İşlem cüzdandan iptal edildi."
+          : err.code === "INSUFFICIENT_FUNDS"
+            ? "Robinhood Chain ağındaki ETH bakiyen bu tutar ve gas ücreti için yetersiz."
+            : (err.shortMessage || err.message);
+        showStatus("presaleStatus", "err", msg);
+      } finally {
+        $("buyBtn").disabled = false;
+      }
+    });
+
+    $("claimBtn").addEventListener("click", async () => {
+      if (!signer) {
+        const ok = await connectWallet();
+        if (!ok) return;
+      }
+
+      try {
+        await ensureRobinhoodNetwork();
+        $("claimBtn").disabled = true;
+        showStatus("walletStatus", "info", "Temettü çekim işlemi için cüzdan onayı bekleniyor...");
+
+        const tokenContract = new ethers.Contract(CONFIG.TOKEN_ADDRESS, TOKEN_ABI, signer);
+        const tx = await tokenContract.claimRewards();
+        await tx.wait();
+
+        showStatus(
+          "walletStatus",
+          "ok",
+          `Ödüllerin başarıyla cüzdanına aktarıldı! <a href="${CONFIG.EXPLORER}/tx/${tx.hash}" target="_blank" rel="noopener">İşlemi Gör ↗</a>`
+        );
+        await refreshUserBalances();
+      } catch (err) {
+        const msg = err.code === "ACTION_REJECTED"
+          ? "İşlem iptal edildi."
+          : "Şu an çekilebilir bir temettü ödülün bulunmuyor (DEX hacmi oluştukça birikir).";
+        showStatus("walletStatus", "err", msg);
+      } finally {
+        $("claimBtn").disabled = false;
+      }
+    });
+
+    $("addTokenBtn").addEventListener("click", async () => {
+      if (!window.ethereum) {
+        showStatus("walletStatus", "info", "Bu özellik için sayfayı MetaMask tarayıcısında açmalısın.");
+        return;
+      }
+      try {
+        await ensureRobinhoodNetwork();
+        await window.ethereum.request({
+          method: "wallet_watchAsset",
+          params: {
+            type: "ERC20",
+            options: {
+              address: CONFIG.TOKEN_ADDRESS,
+              symbol: CONFIG.TOKEN_SYMBOL,
+              decimals: CONFIG.TOKEN_DECIMALS
+            }
+          }
+        });
+      } catch (err) {
+        showStatus("walletStatus", "err", "Token ekleme iptal edildi.");
+      }
+    });
+
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", () => window.location.reload());
+      window.ethereum.on("chainChanged", () => window.location.reload());
+    }
+
+    updateCalc();
+    loadPresaleProgress();
+  </script>
+</body>
+</html>
